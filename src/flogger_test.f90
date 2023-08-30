@@ -1,6 +1,4 @@
 program floggertest
-    use FloggerAnsiStyling
-    use FloggerFormatter
     use Flogger
     implicit none
     call levelClassificationTest()
