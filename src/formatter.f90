@@ -10,10 +10,10 @@ module FloggerFormatter
     type(flog_categories) :: debug, info, notice, warning, error, fatal
     parameter(debug   = flog_categories('devs   ', k_start // trim(fg_white       ) // k_end))
     parameter(info    = flog_categories('info   ', k_start // trim(fg_green       ) // k_end))
-    parameter(notice  = flog_categories('notice ', k_start // trim(fg_magenta) // k_end))
-    parameter(warning = flog_categories('warning', k_start // trim(fg_brightyellow   ) // k_end))
+    parameter(notice  = flog_categories('notice ', k_start // trim(fg_magenta     ) // k_end))
+    parameter(warning = flog_categories('warning', k_start // trim(fg_brightyellow) // k_end))
     parameter(error   = flog_categories('ERROR!!', k_start // trim(sty_bold       ) // ';' &
-                                                           // trim(fg_brightgreen) // k_end))
+                                                           // trim(fg_brightgreen ) // k_end))
     parameter(fatal   = flog_categories('FATAL!!', k_start // trim(sty_bold       ) // ';' &
                                                            // trim(fg_brightred   ) // k_end))
 
@@ -47,7 +47,6 @@ function getNameLabel(name, options) result(out)
     character(*), intent(in) :: name
     character(*), optional, intent(in) :: options(:)
     character(:), allocatable :: out
-    
 
     character(:), allocatable :: fmt_begin, fmt_end
     character(100) :: tmp
@@ -65,8 +64,8 @@ function getLevelLabel(level) result(out)
     implicit none 
     integer, intent(in) :: level
     character(:), allocatable :: out
-    character(100) :: tmp
     
+    character(100) :: tmp
     type(flog_categories) :: category(6) = [debug, info, notice, warning, error, fatal]
 
     write(tmp, 200) trim(category(level)%fstyle_option), trim(category(level)%fcat_name), k_clear

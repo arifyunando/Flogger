@@ -8,10 +8,10 @@ module FloggerAnsiStyling
         character(len=*), parameter :: k_clear    = k_start // '0' // k_end
 
     !--- font style
-        character(len=2), parameter :: sty_reset  = '0'
-        character(len=2), parameter :: sty_bold   = '1'
-        character(len=2), parameter :: sty_italic = '3'
-        character(len=2), parameter :: sty_uline  = '4'
+        character(len=3), parameter :: sty_reset  = '0'
+        character(len=3), parameter :: sty_bold   = '1'
+        character(len=3), parameter :: sty_italic = '3'
+        character(len=3), parameter :: sty_uline  = '4'
     
     !--- text colors
         character(len=3), parameter :: fg_black   = '30'
