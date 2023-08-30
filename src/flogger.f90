@@ -1,28 +1,34 @@
 module Flogger
-    use AnsiStyling
     implicit none
-    
+
+    type, public :: flogs
+        private
+            integer :: FLOGS_LEVEL
+            character(:), allocatable :: FLOGS_NAME
+    contains
+        procedure, public :: set_name => set_name_sub
+        procedure, public :: set_level => set_level_sub
+    end type flogs
+
+    ! restrict access to the actual procedure names
+    private :: set_name_sub, set_level_sub
+
 contains
 
-function getTimeDate(style, fg_color, bg_color) result(out)
+!--- setter and getter
+subroutine set_name_sub(this, name)
     implicit none
+    class(flogs) :: this
+    character(:), allocatable, intent(in) :: name
+    this%FLOGS_NAME = name
+end subroutine set_name_sub
 
-    character(len=*), optional, intent(in) :: style, fg_color, bg_color
-    character(len=:), allocatable :: fmt_begin, fmt_end
-    character(40) :: out
-    character(10) :: b(3)
-    integer :: date_time(8)
-    
-    fmt_begin = getStyleEncoding(style, fg_color, bg_color)
-    fmt_end   = getStyleEncoding()
+subroutine set_level_sub(this, level)
+    implicit none
+    class(flogs) :: this
+    integer, intent(in) :: level
+    this%FLOGS_LEVEL = level
+end subroutine set_level_sub
 
-    call date_and_time(b(1), b(2), b(3), date_time)
-    write(out, 200) fmt_begin, date_time(1), date_time(2), date_time(3), &
-                    date_time(5), date_time(6), date_time(7), date_time(8), fmt_end
-    out = trim(out)
-
-    200 format (A, '[', I4, '-', I2.2, '-', I2.2, ' ', I2.2, ':', I2.2, ':', I2.2, '.', I3.3, ']', A)
-end function
-    
 end module Flogger
 

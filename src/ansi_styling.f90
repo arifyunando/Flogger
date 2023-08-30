@@ -1,4 +1,4 @@
-module AnsiStyling
+module FloggerAnsiStyling
     implicit none
   
     !--- escape keys
@@ -8,61 +8,74 @@ module AnsiStyling
         character(len=*), parameter :: k_clear    = k_start // '0' // k_end
 
     !--- font style
-        character(len=*), parameter :: sty_reset  = '0'
-        character(len=*), parameter :: sty_bold   = '1'
-        character(len=*), parameter :: sty_italic = '3'
-        character(len=*), parameter :: sty_uline  = '4'
+        character(len=2), parameter :: sty_reset  = '0'
+        character(len=2), parameter :: sty_bold   = '1'
+        character(len=2), parameter :: sty_italic = '3'
+        character(len=2), parameter :: sty_uline  = '4'
     
     !--- text colors
-        character(len=*), parameter :: fg_black   = '30'
-        character(len=*), parameter :: fg_red     = '31'
-        character(len=*), parameter :: fg_green   = '32'
-        character(len=*), parameter :: fg_yellow  = '33'
-        character(len=*), parameter :: fg_blue    = '34'
-        character(len=*), parameter :: fg_magenta = '35'
-        character(len=*), parameter :: fg_cyan    = '36'
-        character(len=*), parameter :: fg_white   = '37'
+        character(len=3), parameter :: fg_black   = '30'
+        character(len=3), parameter :: fg_red     = '31'
+        character(len=3), parameter :: fg_green   = '32'
+        character(len=3), parameter :: fg_yellow  = '33'
+        character(len=3), parameter :: fg_blue    = '34'
+        character(len=3), parameter :: fg_magenta = '35'
+        character(len=3), parameter :: fg_cyan    = '36'
+        character(len=3), parameter :: fg_white   = '37'
+        character(len=3), parameter :: fg_brightblack   = '90'
+        character(len=3), parameter :: fg_brightred     = '91'
+        character(len=3), parameter :: fg_brightgreen   = '92'
+        character(len=3), parameter :: fg_brightyellow  = '93'
+        character(len=3), parameter :: fg_brightblue    = '94'
+        character(len=3), parameter :: fg_brightmagenta = '95'
+        character(len=3), parameter :: fg_brightcyan    = '96'
+        character(len=3), parameter :: fg_brightwhite   = '97'
 
     !--- background colors
-        character(len=*), parameter :: bg_black   = '40'
-        character(len=*), parameter :: bg_red     = '41'
-        character(len=*), parameter :: bg_green   = '42'
-        character(len=*), parameter :: bg_yellow  = '43'
-        character(len=*), parameter :: bg_blue    = '44'
-        character(len=*), parameter :: bg_magenta = '45'
-        character(len=*), parameter :: bg_cyan    = '46'
-        character(len=*), parameter :: bg_white   = '47'
+        character(len=3), parameter :: bg_black   = '40'
+        character(len=3), parameter :: bg_red     = '41'
+        character(len=3), parameter :: bg_green   = '42'
+        character(len=3), parameter :: bg_yellow  = '43'
+        character(len=3), parameter :: bg_blue    = '44'
+        character(len=3), parameter :: bg_magenta = '45'
+        character(len=3), parameter :: bg_cyan    = '46'
+        character(len=3), parameter :: bg_white   = '47'
+        character(len=3), parameter :: bg_brightblack   = '100'
+        character(len=3), parameter :: bg_brightred     = '101'
+        character(len=3), parameter :: bg_brightgreen   = '102'
+        character(len=3), parameter :: bg_brightyellow  = '103'
+        character(len=3), parameter :: bg_brightblue    = '104'
+        character(len=3), parameter :: bg_brightmagenta = '105'
+        character(len=3), parameter :: bg_brightcyan    = '106'
+        character(len=3), parameter :: bg_brightwhite   = '107'
 
   
 contains
   
-    function getStyleEncoding(style, fg_color, bg_color) result(out)
-        character(len=*), optional, intent(in) :: style, fg_color, bg_color
+    function getStyleEncoding(options) result(out)
+        implicit none
+        character(len=*), optional, intent(in) :: options(:)
         character(len=:), allocatable :: out
-        integer :: counter = 0
-
+        integer :: option_count, i
+        
         out = k_start
+        option_count = size(options)
 
-        if ( present(style) ) then
-            if (counter > 0) out = out // ';'
-            out = out // style
-            counter = counter + 1
+        if ( (.not. present(options)) .or. (option_count == 0) ) then
+            out = k_clear
+            return
         end if
 
-        if ( present(fg_color) ) then
-            if (counter > 0) out = out // ';'
-            out = out // fg_color
-            counter = counter + 1
-        end if
+        do i = 1, option_count
+            if ( i == 1 ) then
+                out = out // trim(options(i))
+            else
+                out = out // ';' // trim(options(i))
+            end if
+        end do
 
-        if ( present(bg_color) ) then
-            if (counter > 0) out = out // ';'
-            out = out // bg_color
-            counter = counter + 1
-        end if
-
-        if ( counter == 0) out = out // '0'
         out = out // k_end
+        out = trim(out)
     end function getStyleEncoding
   
-end module AnsiStyling
+end module FloggerAnsiStyling
