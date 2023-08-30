@@ -112,6 +112,7 @@ end subroutine formatterTest
 subroutine levelClassificationTest()
     implicit none
     type(FloggerUnit) :: flogs = FloggerUnit("levelClassificationTest")
+    call SET_FLOGGER_OPTIONS(FileOutput=.true.)
 
     print*, "SET TO RELEASE"
     call middleWarning()
@@ -126,7 +127,7 @@ subroutine levelClassificationTest()
 
     
     print*, "SET TO DEBUG"
-    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_DEBUG)
+    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_DEBUG)
 
     call middleWarning()
     call middleNotice()
@@ -140,7 +141,7 @@ subroutine levelClassificationTest()
 
 
     print*, "SET TO NO WARNING"
-    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_NOWARN)
+    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_NOWARN)
 
     call middleWarning()
     call middleNotice()
@@ -151,10 +152,10 @@ subroutine levelClassificationTest()
     call flogs%warning("Message Test Warning 3")
     call flogs%error("Message Test Error 3")
     call flogs%fatal("Message Test Fatal 3")
-
+    call SET_FLOGGER_OPTIONS(FileOutput=.false.)
 
     print*, "SET TO SILENT"
-    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_SILENT, useEncoding=.true.)
+    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_SILENT, useEncoding=.true.)
 
     call middleWarning()
     call middleNotice()
@@ -168,7 +169,7 @@ subroutine levelClassificationTest()
 
 
     print*, "SET TO RELEASE"
-    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_RELEASE)
+    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_RELEASE)
 
     call middleWarning()
     call middleNotice()

@@ -33,6 +33,18 @@ module Flogger
     integer, parameter :: FLOGS_SET_NOWARN  = 2
     integer, parameter :: FLOGS_SET_SILENT  = 3
 
+    ! Class-Definition
+    type, public :: FloggerUnit
+        character(64) :: id 
+    contains
+        procedure, public :: debug => debug_print
+        procedure, public :: info => info_print
+        procedure, public :: notice => notice_print
+        procedure, public :: warning => warning_print
+        procedure, public :: error => error_print
+        procedure, public :: fatal => fatal_print
+    end type FloggerUnit
+
     ! Level-ID
     integer, parameter, private :: FLOGS_ID_DEBUG    = 1
     integer, parameter, private :: FLOGS_ID_INFO     = 2
@@ -45,18 +57,13 @@ module Flogger
     integer, private :: FLOGS_LEVEL_GLOBAL = FLOGS_SET_DEBUG
     logical, private :: FLOGS_USE_ENCODING = .true.
     logical, private :: FLOGS_CONSOLE_PRINT = .true.
+    logical, private :: FLOGS_FILEOUT_PRINT = .false.
 
-    ! Class-Object
-    type, public :: FloggerUnit
-        character(64) :: id 
-    contains
-        procedure, public :: debug => debug_print
-        procedure, public :: info => info_print
-        procedure, public :: notice => notice_print
-        procedure, public :: warning => warning_print
-        procedure, public :: error => error_print
-        procedure, public :: fatal => fatal_print
-    end type FloggerUnit
+    ! File Creation Variable
+    integer, private, parameter       :: FLOGS_FILE_UNIT = 3564437
+    character(11), private, parameter :: FLOGS_FILE_NAME = 'logfile.txt'
+    character(7), private, parameter  :: FLOGS_FILE_STAT = 'REPLACE'
+    character(5), private, parameter  :: FLOGS_FILE_ACTS = 'WRITE'
 
     ! make procedure name private
     private :: debug_print, info_print, notice_print, warning_print, error_print, fatal_print
@@ -64,7 +71,7 @@ module Flogger
 contains
 
 !--- Class-Methods
-subroutine SET_FLOGS_OPTIONS(Level, UseEncoding, ConsolePrint, FileOutput)
+subroutine SET_FLOGGER_OPTIONS(Level, UseEncoding, ConsolePrint, FileOutput)
     integer, optional, intent(in) :: Level
     logical, optional, intent(in) :: UseEncoding
     logical, optional, intent(in) :: ConsolePrint
@@ -84,9 +91,15 @@ subroutine SET_FLOGS_OPTIONS(Level, UseEncoding, ConsolePrint, FileOutput)
     end if
 
     if ( present(FileOutput) ) then
-        
+        FLOGS_FILEOUT_PRINT = FileOutput
+        if ( FileOutput ) then
+            open(Unit=FLOGS_FILE_UNIT, File=FLOGS_FILE_NAME,        &
+                 Status=FLOGS_FILE_STAT, Action=FLOGS_FILE_ACTS)
+        else
+            close(Unit=FLOGS_FILE_UNIT)
+        end if
     end if
-end subroutine SET_FLOGS_OPTIONS
+end subroutine SET_FLOGGER_OPTIONS
 
 !--- Object-Methods / Object-Procedures
 subroutine debug_print(this, message, output)
@@ -105,6 +118,8 @@ subroutine debug_print(this, message, output)
         end if
 
         if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
+        if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) &
+            trim(printPlainText(message, this%id, FLOGS_ID_DEBUG))
         if ( present(output) ) output = trim(tmp)
 
     end if
@@ -126,6 +141,8 @@ subroutine info_print(this, message, output)
         end if
 
         if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
+        if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) &
+            trim(printPlainText(message, this%id, FLOGS_ID_INFO))
         if ( present(output) ) output = trim(tmp)
 
     end if
@@ -147,6 +164,8 @@ subroutine notice_print(this, message, output)
         end if
 
         if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
+        if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) &
+            trim(printPlainText(message, this%id, FLOGS_ID_NOTICE))
         if ( present(output) ) output = trim(tmp)
 
     end if
@@ -168,6 +187,8 @@ subroutine warning_print(this, message, output)
         end if
 
         if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
+        if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) &
+            trim(printPlainText(message, this%id, FLOGS_ID_WARNING))
         if ( present(output) ) output = trim(tmp)
 
     end if
@@ -189,6 +210,8 @@ subroutine error_print(this, message, output)
         end if
 
         if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
+        if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) &
+            trim(printPlainText(message, this%id, FLOGS_ID_ERROR))
         if ( present(output) ) output = trim(tmp)
 
     end if
@@ -210,6 +233,8 @@ subroutine fatal_print(this, message, output)
         end if
 
         if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
+        if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) &
+            trim(printPlainText(message, this%id, FLOGS_ID_FATAL))
         if ( present(output) ) output = trim(tmp)
 
     end if
