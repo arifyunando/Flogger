@@ -1,4 +1,5 @@
 ! "Flogger" is simple and fast logging library for Modern Fortran applications.
+! https://github.com/arifyunando/flogger
 !
 ! MIT License
 !
@@ -155,7 +156,7 @@ subroutine levelClassificationTest()
     call SET_FLOGGER_OPTIONS(FileOutput=.false.)
 
     print*, "SET TO SILENT"
-    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_SILENT, useEncoding=.true.)
+    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_SILENT)
 
     call middleWarning()
     call middleNotice()

@@ -1,4 +1,5 @@
 ! "Flogger" is simple and fast logging library for Modern Fortran applications.
+! https://github.com/arifyunando/flogger
 !
 ! MIT License
 !
@@ -47,8 +48,8 @@ contains
 
 function getTimeDate(options, useEncoding) result(out)
     implicit none
-    character(*), optional, intent(in) :: options(:)
     character(:), allocatable :: out
+    character(*), optional, intent(in) :: options(:)
     logical, optional :: useEncoding
 
     !--- local variables

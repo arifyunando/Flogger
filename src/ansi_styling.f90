@@ -1,4 +1,5 @@
 ! "Flogger" is simple and fast logging library for Modern Fortran applications.
+! https://github.com/arifyunando/flogger
 !
 ! MIT License
 !
