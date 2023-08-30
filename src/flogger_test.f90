@@ -7,30 +7,27 @@ contains
 subroutine middleDebug()
     implicit none
     integer :: i
-    type(flogType) :: flogs2
-    call flogs2%setName("middleDebug")
+    type(FloggerUnit) :: flog = FloggerUnit("MiddleDebug")
     do i = 1, 5
-        call flogs2%debug("Middle Message Test")
+        call flog%debug("Middle Message Test")
     end do
 end subroutine middleDebug
 
 subroutine middleWarning()
     implicit none
     integer :: i
-    type(flogType) :: flogs2
-    call flogs2%setName("middleWarning")
+    type(FloggerUnit) :: flog = FloggerUnit("MiddleWarning")
     do i = 1, 5
-        call flogs2%warning("Middle Message Test")
+        call flog%warning("Middle Message Test")
     end do
 end subroutine middleWarning
 
 subroutine middleNotice()
     implicit none
     integer :: i
-    type(flogType) :: flogs2
-    call flogs2%setName("middleNotice")
+    type(FloggerUnit) :: flog = FloggerUnit("MiddleNotice")
     do i = 1, 5
-        call flogs2%notice("Middle Message Test")
+        call flog%notice("Middle Message Test")
     end do
 end subroutine middleNotice
 
@@ -89,66 +86,74 @@ end subroutine formatterTest
 
 subroutine levelClassificationTest()
     implicit none
-    type(flogType) :: flogs
-    call flogs%setName("levelClassificationTest")
+    type(FloggerUnit) :: flogs = FloggerUnit("levelClassificationTest")
 
-    print*, "RELEASE"
+    print*, "SET TO RELEASE"
+    call middleWarning()
+    call middleNotice()
+    call middleDebug()
     call flogs%debug("Message Test Debug 1")
     call flogs%info("Message Test Info 1")
     call flogs%notice("Message Test Notice 1")
     call flogs%warning("Message Test Warning 1")
     call flogs%error("Message Test Error 1")
     call flogs%fatal("Message Test Fatal 1")
+
+    
+    print*, "SET TO DEBUG"
+    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_DEBUG)
+
     call middleWarning()
     call middleNotice()
     call middleDebug()
-    
-    print*, "DEBUG"
-    FLOGS_LEVEL_GLOBAL = FLOGS_LEVEL_DEBUG
     call flogs%debug("Message Test Debug 2")
     call flogs%info("Message Test Info 2")
     call flogs%notice("Message Test Notice 2")
     call flogs%warning("Message Test Warning 2")
     call flogs%error("Message Test Error 2")
     call flogs%fatal("Message Test Fatal 2")
+
+
+    print*, "SET TO NO WARNING"
+    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_NOWARN)
+
     call middleWarning()
     call middleNotice()
     call middleDebug()
-
-    print*, "NOWARN"
-    FLOGS_LEVEL_GLOBAL = FLOGS_LEVEL_NOWARN
     call flogs%debug("Message Test Debug 3")
     call flogs%info("Message Test Info 3")
     call flogs%notice("Message Test Notice 3")
     call flogs%warning("Message Test Warning 3")
     call flogs%error("Message Test Error 3")
     call flogs%fatal("Message Test Fatal 3")
+
+
+    print*, "SET TO SILENT"
+    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_SILENT, useEncoding=.true.)
+
     call middleWarning()
     call middleNotice()
     call middleDebug()
-
-    print*, "SILENT"
-    FLOGS_LEVEL_GLOBAL = FLOGS_LEVEL_SILENT
     call flogs%debug("Message Test Debug 4")
     call flogs%info("Message Test Info 4")
     call flogs%notice("Message Test Notice 4")
     call flogs%warning("Message Test Warning 4")
     call flogs%error("Message Test Error 4")
     call flogs%fatal("Message Test Fatal 4")
+
+
+    print*, "SET TO RELEASE"
+    call SET_FLOGS_OPTIONS(Level=FLOGS_SET_RELEASE)
+
     call middleWarning()
     call middleNotice()
     call middleDebug()
-
-    print*, "RELEASE"
-    FLOGS_LEVEL_GLOBAL = FLOGS_LEVEL_RELEASE
     call flogs%debug("Message Test Debug 5")
     call flogs%info("Message Test Info 5")
     call flogs%notice("Message Test Notice 5")
     call flogs%warning("Message Test Warning 5")
     call flogs%error("Message Test Error 5")
     call flogs%fatal("Message Test Fatal 5")
-    call middleWarning()
-    call middleNotice()
-    call middleDebug()
+
 end subroutine levelClassificationTest
 end program
