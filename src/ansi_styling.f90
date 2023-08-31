@@ -10,7 +10,7 @@
 ! in the Software without restriction, including without limitation the rights
 ! to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 ! copies of the Software, and to permit persons to whom the Software is
-! furnished to do so, subject to the following conditions:
+! furnished to do so, subject to t  he following conditions:
 !
 ! The above copyright notice and this permission notice shall be included in all
 ! copies or substantial portions of the Software.
@@ -28,80 +28,81 @@ module FloggerAnsiStyling
     implicit none
   
     !--- escape keys
-        character(len=1), parameter :: k_esc      = achar(27)
-        character(len=1), parameter :: k_end      = 'm'
-        character(len=2), parameter :: k_start    = k_esc // '['
-        character(len=*), parameter :: k_clear    = k_start // '0' // k_end
+        character(*), parameter :: FAS_K_ESC   = achar(27)
+        character(*), parameter :: FAS_K_END   = 'm'
+        character(*), parameter :: FAS_K_START = FAS_K_ESC // '['
+        character(*), parameter :: FAS_K_CLEAR = FAS_K_START // '0m' 
 
     !--- font style
-        character(len=3), parameter :: sty_reset  = '0'
-        character(len=3), parameter :: sty_bold   = '1'
-        character(len=3), parameter :: sty_italic = '3'
-        character(len=3), parameter :: sty_uline  = '4'
+        character(3), parameter :: FAS_RESET   = '0'
+        character(3), parameter :: FAS_BOLD    = '1'
+        character(3), parameter :: FAS_ITALIC  = '3'
+        character(3), parameter :: FAS_ULINE   = '4'
     
     !--- text colors
-        character(len=3), parameter :: fg_black   = '30'
-        character(len=3), parameter :: fg_red     = '31'
-        character(len=3), parameter :: fg_green   = '32'
-        character(len=3), parameter :: fg_yellow  = '33'
-        character(len=3), parameter :: fg_blue    = '34'
-        character(len=3), parameter :: fg_magenta = '35'
-        character(len=3), parameter :: fg_cyan    = '36'
-        character(len=3), parameter :: fg_white   = '37'
-        character(len=3), parameter :: fg_brightblack   = '90'
-        character(len=3), parameter :: fg_brightred     = '91'
-        character(len=3), parameter :: fg_brightgreen   = '92'
-        character(len=3), parameter :: fg_brightyellow  = '93'
-        character(len=3), parameter :: fg_brightblue    = '94'
-        character(len=3), parameter :: fg_brightmagenta = '95'
-        character(len=3), parameter :: fg_brightcyan    = '96'
-        character(len=3), parameter :: fg_brightwhite   = '97'
+        character(3), parameter :: FGD_BLACK   = '30'
+        character(3), parameter :: FGD_RED     = '31'
+        character(3), parameter :: FGD_GREEN   = '32'
+        character(3), parameter :: FGD_YELLOW  = '33'
+        character(3), parameter :: FGD_BLUE    = '34'
+        character(3), parameter :: FGD_MAGENTA = '35'
+        character(3), parameter :: FGD_CYAN    = '36'
+        character(3), parameter :: FGD_WHITE   = '37'
+        character(3), parameter :: FGB_BLACK   = '90'
+        character(3), parameter :: FGB_RED     = '91'
+        character(3), parameter :: FGB_GREEN   = '92'
+        character(3), parameter :: FGB_YELLOW  = '93'
+        character(3), parameter :: FGB_BLUE    = '94'
+        character(3), parameter :: FGB_MAGENTA = '95'
+        character(3), parameter :: FGB_CYAN    = '96'
+        character(3), parameter :: FGB_WHITE   = '97'
 
     !--- background colors
-        character(len=3), parameter :: bg_black   = '40'
-        character(len=3), parameter :: bg_red     = '41'
-        character(len=3), parameter :: bg_green   = '42'
-        character(len=3), parameter :: bg_yellow  = '43'
-        character(len=3), parameter :: bg_blue    = '44'
-        character(len=3), parameter :: bg_magenta = '45'
-        character(len=3), parameter :: bg_cyan    = '46'
-        character(len=3), parameter :: bg_white   = '47'
-        character(len=3), parameter :: bg_brightblack   = '100'
-        character(len=3), parameter :: bg_brightred     = '101'
-        character(len=3), parameter :: bg_brightgreen   = '102'
-        character(len=3), parameter :: bg_brightyellow  = '103'
-        character(len=3), parameter :: bg_brightblue    = '104'
-        character(len=3), parameter :: bg_brightmagenta = '105'
-        character(len=3), parameter :: bg_brightcyan    = '106'
-        character(len=3), parameter :: bg_brightwhite   = '107'
+        character(3), parameter :: BGD_BLACK   = '40'
+        character(3), parameter :: BGD_RED     = '41'
+        character(3), parameter :: BGD_GREEN   = '42'
+        character(3), parameter :: BGD_YELLOW  = '43'
+        character(3), parameter :: BGD_BLUE    = '44'
+        character(3), parameter :: BGD_MAGENTA = '45'
+        character(3), parameter :: BGD_CYAN    = '46'
+        character(3), parameter :: BGD_WHITE   = '47'
+        character(3), parameter :: BGB_BLACK   = '100'
+        character(3), parameter :: BGB_RED     = '101'
+        character(3), parameter :: BGB_GREEN   = '102'
+        character(3), parameter :: BGB_YELLOW  = '103'
+        character(3), parameter :: BGB_BLUE    = '104'
+        character(3), parameter :: BGB_MAGENTA = '105'
+        character(3), parameter :: BGB_CYAN    = '106'
+        character(3), parameter :: BGB_WHITE   = '107'
 
   
 contains
   
-    function getStyleEncoding(options) result(out)
-        implicit none
-        character(len=*), optional, intent(in) :: options(:)
-        character(len=:), allocatable :: out
-        integer :: option_count, i
-        
-        out = k_start
-        option_count = size(options)
+function getStyleEncoding(options) result(out)
+    implicit none
+    
+    character(len=*), optional, intent(in) :: options(:)
+    character(len=:), allocatable :: out
+    integer :: option_count, i
+    
+    out = FAS_K_START
+    option_count = size(options)
 
-        if ( (.not. present(options)) .or. (option_count == 0) ) then
-            out = k_clear
-            return
+    if ( (.not. present(options)) .or. (option_count == 0) ) then
+        out = FAS_K_CLEAR
+        return
+    end if
+
+    do i = 1, option_count
+        if ( i == 1 ) then
+            out = out // trim(options(i))
+        else
+            out = out // ';' // trim(options(i))
         end if
+    end do
 
-        do i = 1, option_count
-            if ( i == 1 ) then
-                out = out // trim(options(i))
-            else
-                out = out // ';' // trim(options(i))
-            end if
-        end do
+    out = out // FAS_K_END
+    out = trim(out)
+end function getStyleEncoding
 
-        out = out // k_end
-        out = trim(out)
-    end function getStyleEncoding
-  
 end module FloggerAnsiStyling

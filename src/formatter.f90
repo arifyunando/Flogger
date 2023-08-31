@@ -28,45 +28,78 @@ module FloggerFormatter
     use FloggerAnsiStyling
     implicit none
 
+    ! Date Styles
+    character(64), private :: FLOGS_STYLE_LABEL = FAS_K_CLEAR
+    character(64), private :: FLOGS_STYLE_TEXT  = FAS_K_CLEAR
+    character(64), private :: FLOGS_STYLE_DATETIME                              &
+                                = FAS_K_START // trim(FGB_CYAN) // FAS_K_END
+    
+    ! Category Styles
+    character(15) :: STY_DEBUG, STY_INFO, STY_NOTE
+    character(15) :: STY_WARN, STY_ERROR, STY_FATAL
+    parameter(STY_DEBUG = FAS_K_START // trim(FGD_WHITE)   // FAS_K_END)
+    parameter(STY_INFO  = FAS_K_START // trim(FGD_GREEN)   // FAS_K_END)
+    parameter(STY_NOTE  = FAS_K_START // trim(FGD_MAGENTA) // FAS_K_END)
+    parameter(STY_WARN  = FAS_K_START // trim(FGB_YELLOW)  // FAS_K_END)
+    parameter(STY_ERROR = FAS_K_START // trim(FAS_BOLD)    // ';'               &
+                                      // trim(FGB_GREEN)   // FAS_K_END)
+    parameter(STY_FATAL = FAS_K_START // trim(FAS_BOLD)    // ';'               &
+                                      // trim(FGB_RED)     // FAS_K_END)
+                                     
     ! category definition
     type :: FloggerCategory
-        character(7) :: fcat_name
-        character(15) :: fstyle_option
+        character(7) :: name
+        character(15) :: style
     end type FloggerCategory
 
-    type(FloggerCategory) :: flogDebug, flogInfo, flogNotice, flogWarning, flogError, flogFatal
-    parameter(flogDebug   = FloggerCategory('debug  ', k_start // trim(fg_white       ) // k_end))
-    parameter(flogInfo    = FloggerCategory('info   ', k_start // trim(fg_green       ) // k_end))
-    parameter(flogNotice  = FloggerCategory('notice ', k_start // trim(fg_magenta     ) // k_end))
-    parameter(flogWarning = FloggerCategory('warning', k_start // trim(fg_brightyellow) // k_end))
-    parameter(flogError   = FloggerCategory('ERROR!!', k_start // trim(sty_bold       ) // ';' &
-                                                               // trim(fg_brightgreen ) // k_end))
-    parameter(flogFatal   = FloggerCategory('FATAL!!', k_start // trim(sty_bold       ) // ';' &
-                                                               // trim(fg_brightred   ) // k_end))
+    type(FloggerCategory) :: flogDebug, flogInfo, flogNotice
+    type(FloggerCategory) :: flogWarning, flogError, flogFatal
+    parameter(flogDebug   = FloggerCategory('debug  ', STY_DEBUG))
+    parameter(flogInfo    = FloggerCategory('info   ', STY_INFO))
+    parameter(flogNotice  = FloggerCategory('notice ', STY_NOTE))
+    parameter(flogWarning = FloggerCategory('warning', STY_WARN))
+    parameter(flogError   = FloggerCategory('ERROR!!', STY_ERROR))
+    parameter(flogFatal   = FloggerCategory('FATAL!!', STY_FATAL))
 
 contains
 
-function getTimeDate(options, useEncoding) result(out)
+subroutine SET_FLOGGER_STYLE(LabelOptions,  DateOptions, TextOptions)
     implicit none
+
+    character(*), optional, intent(in) :: LabelOptions(:)
+    character(*), optional, intent(in) :: DateOptions(:)
+    character(*), optional, intent(in) :: TextOptions(:)
+
+    if ( present(LabelOptions) ) &
+        FLOGS_STYLE_LABEL = getStyleEncoding(LabelOptions)
+
+    if ( present(DateOptions) ) &
+        FLOGS_STYLE_DATETIME = getStyleEncoding(DateOptions)
+
+    if ( present(TextOptions) ) &
+        FLOGS_STYLE_TEXT = getStyleEncoding(TextOptions)
+end subroutine SET_FLOGGER_STYLE
+
+function getDateTime(useEncoding) result(out)
+    implicit none
+
     character(:), allocatable :: out
-    character(*), optional, intent(in) :: options(:)
     logical, optional :: useEncoding
 
     !--- local variables
-    character(:), allocatable :: fmt_begin, fmt_end
-    character(100) :: tmp
-    character(10) :: b(3)
     integer :: date_time(8)
-    
+    logical :: useEncodingLocal = .true.
+    character(100) :: tmp
+
     !--- processes
-    fmt_begin = getStyleEncoding(options)
-    fmt_end   = getStyleEncoding()
-    call date_and_time(b(1), b(2), b(3), date_time)
+    call date_and_time(values=date_time)
     
-    if ( .not. present(useEncoding) ) useEncoding = .true.
-    if ( useEncoding ) then
-        write(tmp, 200) fmt_begin, date_time(1), date_time(2), date_time(3),    &
-                        date_time(5), date_time(6), date_time(7), date_time(8), fmt_end
+    if ( present(useEncoding) ) useEncodingLocal = useEncoding
+    if ( useEncodingLocal ) then
+        write(tmp, 200) trim(FLOGS_STYLE_DATETIME),                             &
+                        date_time(1), date_time(2), date_time(3),               &
+                        date_time(5), date_time(6), date_time(7), date_time(8), &
+                        FAS_K_CLEAR
     else
         write(tmp, 210) date_time(1), date_time(2), date_time(3),               &
                         date_time(5), date_time(6), date_time(7), date_time(8)
@@ -75,30 +108,26 @@ function getTimeDate(options, useEncoding) result(out)
     out = trim(tmp)
 
     !--- formatters
-    200 format (A, '[', I4, '-', I2.2, '-', I2.2, ' ',                          & 
+    200 format (A, '[', I4, '-', I2.2, '-', I2.2, ' ',                          &
                 I2.2, ':', I2.2, ':', I2.2, '.', I3.3, ']', A)
     210 format ('[', I4, '-', I2.2, '-', I2.2, ' ',                             & 
                 I2.2, ':', I2.2, ':', I2.2, '.', I3.3, ']')
 end function
 
-function getNameLabel(label, options, useEncoding) result(out)
-    implicit none 
+function getNameLabel(label, useEncoding) result(out)
+    implicit none
     character(:), allocatable :: out
     character(*), intent(in) :: label
-    character(*), optional, intent(in) :: options(:)
     logical, optional :: useEncoding
 
     !--- local variables
-    character(:), allocatable :: fmt_begin, fmt_end
     character(100) :: tmp
+    logical :: useEncodingLocal = .true.
 
     !--- processes
-    fmt_begin = getStyleEncoding(options)
-    fmt_end   = getStyleEncoding()
-    
-    if ( .not. present(useEncoding) ) useEncoding = .true.
-    if ( useEncoding ) then
-        write(tmp, 200) trim(fmt_begin), trim(label), trim(fmt_end)
+    if ( present(useEncoding) ) useEncodingLocal = useEncoding
+    if ( useEncodingLocal ) then
+        write(tmp, 200) trim(FLOGS_STYLE_LABEL), trim(label), FAS_K_CLEAR
     else
         write(tmp, 210) trim(label)
     end if
@@ -111,36 +140,37 @@ function getNameLabel(label, options, useEncoding) result(out)
 end function
 
 function getLevelLabel(level, useEncoding) result(out)
-    implicit none 
+    implicit none
+
     character(:), allocatable :: out
     integer, intent(in) :: level
     logical, optional :: useEncoding
 
     !--- local variables
-    character(100) :: tmp
-    type(FloggerCategory) :: category(6) = [                                        &
-        flogDebug, flogInfo, flogNotice,                                            &
-        flogWarning, flogError, flogFatal                                           &
+    type(FloggerCategory) :: lv(6) = [                                          &
+        flogDebug, flogInfo, flogNotice, flogWarning, flogError, flogFatal      &
     ]
+    character(100) :: tmp
+    logical :: useEncodingLocal = .true.
 
     !--- processes
-    if ( .not. present(useEncoding) ) useEncoding = .true.
-    if ( useEncoding ) then
-        write(tmp, 200) trim(category(level)%fstyle_option),                        &
-                        trim(category(level)%fcat_name), k_clear
+    if ( present(useEncoding) ) useEncodingLocal = useEncoding
+    if ( useEncodingLocal ) then
+        write(tmp, 200) trim(lv(level)%style), trim(lv(level)%name), FAS_K_CLEAR
     else
-        write(tmp, 210) trim(category(level)%fcat_name)
+        write(tmp, 210) trim(lv(level)%name)
     end if
 
     out = trim(tmp)
 
     !--- formatters
-    200 format ('[ ', A, A, A,' ]')
+    200 format ('[', A, A, A, ']')
     210 format ('[', A, ']')
 end function
 
 function printConsole(message, label, level) result(out)
     implicit none
+
     character(:), allocatable :: out
     character(*), intent(in) :: message
     character(*), intent(in) :: label
@@ -150,18 +180,19 @@ function printConsole(message, label, level) result(out)
     character(512) :: tmp
 
     !--- processes
-    write(tmp, 200) getTimeDate(options=[fg_brightcyan], useEncoding=.true.),       &
-                    getNameLabel(label, useEncoding=.true.),                        &
-                    getLevelLabel(level, useEncoding=.true.),                       &
+    write(tmp, 200) getDateTime(useEncoding=.true.),                            &
+                    getNameLabel(label, useEncoding=.true.),                    &
+                    getLevelLabel(level, useEncoding=.true.),                   &
                     message
     out = trim(tmp)
-    
+
     !--- formatters
     200 format (A, ' ', A, ' ', A, ' ', A)
 end function printConsole
 
 function printPlainText(message, label, level) result(out)
     implicit none
+
     character(:), allocatable :: out
     character(*), intent(in) :: message
     character(*), intent(in) :: label
@@ -171,13 +202,14 @@ function printPlainText(message, label, level) result(out)
     character(512) :: tmp
 
     !--- processes
-    write(tmp, 200) getTimeDate(options=[fg_brightcyan], useEncoding=.false.),      &
-                    getNameLabel(label, useEncoding=.false.),                       &
-                    getLevelLabel(level, useEncoding=.false.),                      &
+    write(tmp, 200) getDateTime(useEncoding=.false.),                           &
+                    getNameLabel(label, useEncoding=.false.),                   &
+                    getLevelLabel(level, useEncoding=.false.),                  &
                     message
     out = trim(tmp)
-    
+
     !--- formatters
     200 format (A, ' ', A, ' ', A, ' ', A)
 end function printPlainText
+
 end module FloggerFormatter
