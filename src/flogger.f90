@@ -105,7 +105,6 @@ subroutine NOTICE_PRINT(this, message, output)
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
     character(*), intent(in) :: message
-    character(512) :: tmp
 
     !--- processes
     if ( FLOGS_LEVEL_GLOBAL < 2 ) then
@@ -145,7 +144,6 @@ subroutine FATAL_PRINT(this, message, output)
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
     character(*), intent(in) :: message
-    character(512) :: tmp
 
     !--- processes
     if ( FLOGS_LEVEL_GLOBAL < 4 ) then
