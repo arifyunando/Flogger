@@ -25,95 +25,126 @@
 
 program TEST_FORMATTER
     use FloggerFormatter
+    use FloggerAnsiStyling
     implicit none
+    real :: timestart, timeend
+
     print*
     print*, "##################################################################"
     print*, "                          TEST FORMATTER                          "
     print*, "##################################################################"
-    call test_getDateTime()
-    call test_getNameLabel()
-    call test_getLevelLabel()
-    call test_Combinations()
-
-contains
-
-subroutine test_getDateTime()
-    implicit none
-    integer :: i
-    print*
-    print*, "!--- TESTING getDateTime"
-    do i = 1, 5
-        print *, getDateTime()
-    end do
-end subroutine test_getDateTime
-
-subroutine test_getNameLabel()
-    implicit none
-    integer :: i
-    character(50) :: tmp
-
-    print*
-    print*, "!--- TESTING getNameLabel"
-    do i = 1, 5
-        write(tmp, *) "Testing", i
-        print *, getNameLabel(tmp)
-    end do
-end subroutine test_getNameLabel
-
-subroutine test_getLevelLabel()
-    implicit none
     
-    integer :: i
-
+    call cpu_time(timestart)
+    call test_Combinations()
+    call cpu_time(timeend)
+    
     print*
-    print*, "!--- TESTING getLevelLabel"
-    do i = 1, 6
-        print *, getLevelLabel(i)
-    end do
-end subroutine test_getLevelLabel
+    print*, "##################################################################"
+    print 100, (timeend - timestart)*1000
+    print*, "##################################################################"
+
+    100 format (" ","Finish Testing Formatter, total test time = ", G0, ' ms')
+contains
 
 subroutine test_Combinations()
     implicit none
     integer :: i
     
     print*
-    print*, "!--- TESTING COMBINATIONS"
+    print*, "!--- CHANGE FORMATTING"
     call SET_FLOGGER_STYLE(DateOptions=[FGD_CYAN])
-    do i = 1, 10
-        print 200,  getDateTime(),                                              &
-                    getNameLabel('FloggerTest'),                                &
-                    getLevelLabel( mod(i, 6) + 1), "Test Message"
+    do i = 1, 20
+        print *, printConsole("Test Message", "FloggerTest", mod(i, 6) + 1)
     end do
 
+    print*
+    print*, "!--- CHANGE FORMATTING"
     call SET_FLOGGER_STYLE(DateOptions=[FGB_CYAN])
-    do i = 1, 10
-        print 200,  getDateTime(),                                              &
-                    getNameLabel('FloggerTest'),                                &
-                    getLevelLabel(2), "Test Message"
+    do i = 1, 5
+        print *, printConsole("Test Message 4", "FloggerTest 1", 1)
     end do
-    
+    do i = 1, 5
+        print *, printConsole("Test Message 4", "FloggerTest 1", 2)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 4", "FloggerTest 1", 3)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 4", "FloggerTest 1", 4)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 4", "FloggerTest 1", 5)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 4", "FloggerTest 1", 6)
+    end do
+
+    print*
+    print*, "!--- CHANGE FORMATTING"
     call SET_FLOGGER_STYLE(DateOptions=[FGB_MAGENTA], LabelOptions=[FAS_ITALIC])
-    do i = 1, 10
-        print 200,  getDateTime(),                                              &
-                    getNameLabel('FloggerBaseClass'),                           &
-                    getLevelLabel(4), "Test Message"
+    do i = 1, 5
+        print *, printConsole("Test Message 3", "FloggerTest 2", 1)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 3", "FloggerTest 2", 2)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 3", "FloggerTest 2", 3)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 3", "FloggerTest 2", 4)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 3", "FloggerTest 2", 5)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 3", "FloggerTest 2", 6)
     end do
     
+    print*
+    print*, "!--- CHANGE FORMATTING"
     call SET_FLOGGER_STYLE(DateOptions=[FGB_CYAN], LabelOptions=[FAS_RESET])
     do i = 1, 5
-        print 200,  getDateTime(),                                              &
-                    getNameLabel('FloggerTest'),                                &
-                    getLevelLabel(5), "Test Message"
+        print *, printConsole("Test Message 2", "FloggerTest 3", 1)
     end do
-    
+    do i = 1, 5
+        print *, printConsole("Test Message 2", "FloggerTest 3", 2)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 2", "FloggerTest 3", 3)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 2", "FloggerTest 3", 4)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 2", "FloggerTest 3", 5)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 2", "FloggerTest 3", 6)
+    end do
+        
+    print*
+    print*, "!--- CHANGE FORMATTING"
     call SET_FLOGGER_STYLE(DateOptions=[FGB_RED, FAS_BOLD, FAS_ITALIC])
     do i = 1, 5
-        print 200,  getDateTime(),                                              &
-                    getNameLabel('FloggerTest'),                                &
-                    getLevelLabel(6), "Test Message"
+        print *, printConsole("Test Message 1", "FloggerTest 4", 1)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 1", "FloggerTest 4", 2)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 1", "FloggerTest 4", 3)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 1", "FloggerTest 4", 4)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 1", "FloggerTest 4", 5)
+    end do
+    do i = 1, 5
+        print *, printConsole("Test Message 1", "FloggerTest 4", 6)
     end do
 
-    200 format (' ', A, ' ', A, ' ', A, ' ', A)
 end subroutine test_Combinations
 
 end program TEST_FORMATTER

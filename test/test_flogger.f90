@@ -27,12 +27,23 @@
 program TEST_FLOGGER
     use Flogger
     implicit none
+    real :: timestart, timeend
+
     print*
     print*, "##################################################################"
     print*, "                           TEST FLOGGER                           "
     print*, "##################################################################"
     
+    call cpu_time(timestart)
     call levelClassificationTest()
+    call cpu_time(timeend)
+    
+    print*
+    print*, "##################################################################"
+    print 100, (timeend - timestart)*1000
+    print*, "##################################################################"
+
+    100 format (" ","Finish Testing Flogger, total test time = ", G0, ' ms')
 contains
 
 subroutine middleDebug()

@@ -44,8 +44,8 @@ set(CMAKE_Fortran_FLAGS "-cpp -g")
 
 # set variables for files
 set(lib_src
-    ${PROJECT_SOURCE_DIR}/src/ansi_styling.f90
-    ${PROJECT_SOURCE_DIR}/src/formatter.f90
+    ${PROJECT_SOURCE_DIR}/src/flogger_ansistyling.f90
+    ${PROJECT_SOURCE_DIR}/src/flogger_formatter.f90
     ${PROJECT_SOURCE_DIR}/src/flogger.f90
 )
 
