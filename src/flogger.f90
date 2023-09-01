@@ -106,7 +106,6 @@ subroutine notice_print(this, message, output)
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
     character(*), intent(in) :: message
-    character(512) :: tmp
 
     !--- processes
     if ( FLOGS_LEVEL_GLOBAL < 2 ) then

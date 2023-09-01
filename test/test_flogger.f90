@@ -272,9 +272,7 @@ subroutine stress_test_fortranprint(n_iteration, time)
     real, intent(out) ::  time
     integer :: i
     real :: timein, timeout
-    character(10) :: tmp
 
-    type(FloggerUnit) :: flog = FloggerUnit("Stress Test 3")
     call flogger_set_options(UseEncoding=.false., ConsolePrint=.true., level=FLOGS_SET_DEBUG)
     call flogger_set_section(addDateTime=.false., addLabel=.false.)
     call cpu_time(timein)
