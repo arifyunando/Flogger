@@ -24,8 +24,6 @@
 ! SOFTWARE.
 
 program TEST_FORMATTER
-    use FloggerFormatter
-    use FloggerAnsiStyling
     implicit none
     real :: timestart, timeend
 
@@ -47,102 +45,52 @@ program TEST_FORMATTER
 contains
 
 subroutine test_Combinations()
+    use FloggerAnsiStyling
+    use FloggerFormatter
     implicit none
-    integer :: i
+    integer :: i, j
     
     print*
     print*, "!--- CHANGE FORMATTING"
-    call SET_FLOGGER_STYLE(DateOptions=[FGD_CYAN])
+    call flogger_set_style(DateOptions=[FGD_CYAN])
     do i = 1, 20
-        print *, printConsole("Test Message", "FloggerTest", mod(i, 6) + 1)
+        print *, printFormatted("Test Message", "FloggerTest", mod(i, 6) + 1, .true.)
     end do
 
     print*
     print*, "!--- CHANGE FORMATTING"
-    call SET_FLOGGER_STYLE(DateOptions=[FGB_CYAN])
-    do i = 1, 5
-        print *, printConsole("Test Message 4", "FloggerTest 1", 1)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 4", "FloggerTest 1", 2)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 4", "FloggerTest 1", 3)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 4", "FloggerTest 1", 4)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 4", "FloggerTest 1", 5)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 4", "FloggerTest 1", 6)
+    call flogger_set_style(DateOptions=[FGB_CYAN])
+    do j = 1, 6
+        do i = 1, 5
+            print *, printFormatted("Test Message 4", "FloggerTest 1", j, .true.)
+        end do
     end do
 
     print*
     print*, "!--- CHANGE FORMATTING"
-    call SET_FLOGGER_STYLE(DateOptions=[FGB_MAGENTA], LabelOptions=[FAS_ITALIC])
-    do i = 1, 5
-        print *, printConsole("Test Message 3", "FloggerTest 2", 1)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 3", "FloggerTest 2", 2)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 3", "FloggerTest 2", 3)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 3", "FloggerTest 2", 4)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 3", "FloggerTest 2", 5)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 3", "FloggerTest 2", 6)
+    call flogger_set_style(DateOptions=[FGB_MAGENTA], LabelOptions=[FAS_ITALIC])
+    do j = 1, 6
+        do i = 1, 5
+            print *, printFormatted("Test Message 3", "FloggerTest 2", j, .true.)
+        end do
     end do
     
     print*
     print*, "!--- CHANGE FORMATTING"
-    call SET_FLOGGER_STYLE(DateOptions=[FGB_CYAN], LabelOptions=[FAS_RESET])
-    do i = 1, 5
-        print *, printConsole("Test Message 2", "FloggerTest 3", 1)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 2", "FloggerTest 3", 2)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 2", "FloggerTest 3", 3)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 2", "FloggerTest 3", 4)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 2", "FloggerTest 3", 5)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 2", "FloggerTest 3", 6)
+    call flogger_set_style(DateOptions=[FGB_CYAN], LabelOptions=[FAS_RESET])
+    do j = 1, 6
+        do i = 1, 5
+            print *, printFormatted("Test Message 2", "FloggerTest 3", j, .true.)
+        end do
     end do
         
     print*
     print*, "!--- CHANGE FORMATTING"
-    call SET_FLOGGER_STYLE(DateOptions=[FGB_RED, FAS_BOLD, FAS_ITALIC])
-    do i = 1, 5
-        print *, printConsole("Test Message 1", "FloggerTest 4", 1)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 1", "FloggerTest 4", 2)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 1", "FloggerTest 4", 3)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 1", "FloggerTest 4", 4)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 1", "FloggerTest 4", 5)
-    end do
-    do i = 1, 5
-        print *, printConsole("Test Message 1", "FloggerTest 4", 6)
+    call flogger_set_style(DateOptions=[FGB_RED, FAS_BOLD, FAS_ITALIC])
+    do j = 1, 6
+        do i = 1, 5
+            print *, printFormatted("Test Message 1", "FloggerTest 4", j, .true.)
+        end do
     end do
 
 end subroutine test_Combinations

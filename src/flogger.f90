@@ -27,6 +27,7 @@
 module Flogger
     implicit none
     private
+
     ! Compile Mode ID
     integer, parameter, public :: FLOGS_SET_DEBUG   = 0
     integer, parameter, public :: FLOGS_SET_RELEASE = 1
@@ -65,16 +66,16 @@ module Flogger
         procedure, public :: fatal => fatal_print
     end type FloggerUnit
 
-    ! make procedure name private
+    ! define procedure visibility
     private  :: debug_print, info_print, notice_print,                          &
                 warning_print, error_print, fatal_print
-    public   :: SET_FLOGGER_OPTIONS
+    public   :: flogger_set_options
 
 contains
 
 !--- OBJECT METHODS / PROCEDURES
 
-subroutine DEBUG_PRINT(this, message, output)
+subroutine debug_print(this, message, output)
     implicit none
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
@@ -84,10 +85,10 @@ subroutine DEBUG_PRINT(this, message, output)
     if ( FLOGS_LEVEL_GLOBAL < 1 ) then
         call BASE_PRINT(message, this%id, FLOGS_ID_DEBUG, output)
     end if
-end subroutine DEBUG_PRINT
+end subroutine debug_print
 
 
-subroutine INFO_PRINT(this, message, output)
+subroutine info_print(this, message, output)
     implicit none
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
@@ -97,23 +98,24 @@ subroutine INFO_PRINT(this, message, output)
     if ( FLOGS_LEVEL_GLOBAL < 2 ) then
         call BASE_PRINT(message, this%id, FLOGS_ID_INFO, output)
     end if
-end subroutine INFO_PRINT
+end subroutine info_print
 
 
-subroutine NOTICE_PRINT(this, message, output)
+subroutine notice_print(this, message, output)
     implicit none
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
     character(*), intent(in) :: message
+    character(512) :: tmp
 
     !--- processes
     if ( FLOGS_LEVEL_GLOBAL < 2 ) then
         call BASE_PRINT(message, this%id, FLOGS_ID_NOTICE, output)
     end if
-end subroutine NOTICE_PRINT
+end subroutine notice_print
 
 
-subroutine WARNING_PRINT(this, message, output)
+subroutine warning_print(this, message, output)
     implicit none
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
@@ -123,10 +125,10 @@ subroutine WARNING_PRINT(this, message, output)
     if ( FLOGS_LEVEL_GLOBAL < 2 ) then
         call BASE_PRINT(message, this%id, FLOGS_ID_WARNING, output)
     end if
-end subroutine WARNING_PRINT
+end subroutine warning_print
 
 
-subroutine ERROR_PRINT(this, message, output)
+subroutine error_print(this, message, output)
     implicit none
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
@@ -136,10 +138,10 @@ subroutine ERROR_PRINT(this, message, output)
     if ( FLOGS_LEVEL_GLOBAL < 3 ) then
         call BASE_PRINT(message, this%id, FLOGS_ID_ERROR, output)
     end if
-end subroutine ERROR_PRINT
+end subroutine error_print
 
 
-subroutine FATAL_PRINT(this, message, output)
+subroutine fatal_print(this, message, output)
     implicit none
     class(FloggerUnit) :: this
     character(:), allocatable, optional, intent(out) :: output
@@ -149,11 +151,11 @@ subroutine FATAL_PRINT(this, message, output)
     if ( FLOGS_LEVEL_GLOBAL < 4 ) then
         call BASE_PRINT(message, this%id, FLOGS_ID_FATAL, output)
     end if
-end subroutine FATAL_PRINT
+end subroutine fatal_print
 
 !--- PRIVATE FUNCTIONS / SUBROUTINES
 
-subroutine BASE_PRINT(message, label, level, output)
+subroutine base_print(message, label, level, output)
     use FloggerFormatter
     implicit none
     character(:), allocatable, optional, intent(out) :: output
@@ -162,15 +164,15 @@ subroutine BASE_PRINT(message, label, level, output)
     character(512) :: tmp
     
     !--- processes
-    tmp = printplaintext(message, label, level)
+    tmp = printFormatted(message, label, level, inConsole=.false.)
     if ( FLOGS_FILEOUT_PRINT ) write(FLOGS_FILE_UNIT, *) trim(tmp)
-    if ( FLOGS_USE_ENCODING ) tmp = printconsole(message, label, level)
+    if ( FLOGS_USE_ENCODING ) tmp = printFormatted(message, label, level, inConsole=.true.)
     if ( FLOGS_CONSOLE_PRINT ) print*, trim(tmp)
     if ( present(output) ) output = trim(tmp)
-end subroutine BASE_PRINT
+end subroutine base_print
 
 
-subroutine FLOGGER_OPEN_FILE()
+subroutine flogger_open_file()
     use FloggerFormatter, only: PRINT_FILE_HEADER
     implicit none
 
@@ -178,23 +180,23 @@ subroutine FLOGGER_OPEN_FILE()
     if ( FLOGS_FILEOUT_PRINT .eqv. .true. ) return
     open(Unit=FLOGS_FILE_UNIT, File=FLOGS_FILE_NAME,                            &
          Status=FLOGS_FILE_STAT, Action=FLOGS_FILE_ACTS)
-    call PRINT_FILE_HEADER(FLOGS_FILE_UNIT)
+    call print_file_header(FLOGS_FILE_UNIT)
     FLOGS_FILEOUT_PRINT = .true.
-end subroutine FLOGGER_OPEN_FILE
+end subroutine flogger_open_file
 
 
-subroutine FLOGGER_CLOSE_FILE()
+subroutine flogger_close_file()
     implicit none
 
     !--- processes
     if ( FLOGS_FILEOUT_PRINT .eqv. .false. ) return
     close(unit=FLOGS_FILE_UNIT)
     FLOGS_FILEOUT_PRINT = .false.
-end subroutine FLOGGER_CLOSE_FILE
+end subroutine flogger_close_file
 
 !--- PUBLIC FUNCTIONS / SUBROUTINES
 
-subroutine SET_FLOGGER_OPTIONS(Level, UseEncoding, ConsolePrint, FileOutput)
+subroutine flogger_set_options(Level, UseEncoding, ConsolePrint, FileOutput)
     use FloggerFormatter
     implicit none
     integer, optional, intent(in) :: Level
@@ -222,7 +224,7 @@ subroutine SET_FLOGGER_OPTIONS(Level, UseEncoding, ConsolePrint, FileOutput)
             call FLOGGER_CLOSE_FILE()
         end if
     end if
-end subroutine SET_FLOGGER_OPTIONS
+end subroutine flogger_set_options
 
 end module Flogger
 

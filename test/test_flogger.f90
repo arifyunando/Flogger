@@ -27,23 +27,38 @@
 program TEST_FLOGGER
     use Flogger
     implicit none
-    real :: timestart, timeend
+    real :: stressTime(5)
+    integer :: iteration = 100000
+    character(20) :: args
+
+    call get_command_argument(number=1, value=args)
 
     print*
     print*, "##################################################################"
     print*, "                           TEST FLOGGER                           "
     print*, "##################################################################"
     
-    call cpu_time(timestart)
-    call levelClassificationTest()
-    call cpu_time(timeend)
+    if ( args == "-fstress-test" ) then
+        call stress_test_basic(iteration, stresstime(1))
+        call stress_test_plain(iteration, stresstime(2))
+        call stress_test_empty(iteration, stresstime(3))
+        call stress_test_noDTnoLabel(iteration, stresstime(4))
+        call stress_test_fortranprint(iteration, stresstime(5))
     
-    print*
-    print*, "##################################################################"
-    print 100, (timeend - timestart)*1000
-    print*, "##################################################################"
+        print*, "***************************************************************"
+        print*, " Single Thread, ", iteration, " iterations"
+        print*, "***************************************************************"
+        print 200, "Basic Test", stressTime(1), iteration/stressTime(1) 
+        print 200, "Plain Test", stressTime(2), iteration/stressTime(2)
+        print 200, "Empty Test", stressTime(3), iteration/stressTime(3)
+        print 200, "NoDTnoLabel Test", stressTime(4), iteration/stressTime(4)
+        print 200, "Fortran Print", stressTime(5), iteration/stressTime(5)
+        print*, "***************************************************************"
+    end if
 
-    100 format (" ","Finish Testing Flogger, total test time = ", G0, ' ms')
+    call levelClassificationTest()
+
+    200 format (" ", A18, 4X, "Elapsed: ", F6.3, " secs", 4X, F12.3, " /sec")
 contains
 
 subroutine middleDebug()
@@ -55,6 +70,7 @@ subroutine middleDebug()
     end do
 end subroutine middleDebug
 
+
 subroutine middleWarning()
     implicit none
     integer :: i
@@ -63,6 +79,7 @@ subroutine middleWarning()
         call flog%warning("Middle Message Test")
     end do
 end subroutine middleWarning
+
 
 subroutine middleNotice()
     implicit none
@@ -73,10 +90,13 @@ subroutine middleNotice()
     end do
 end subroutine middleNotice
 
+
 subroutine levelClassificationTest()
+    use FloggerFormatter, only: flogger_set_section
     implicit none
     type(FloggerUnit) :: flogs = FloggerUnit("levelClassificationTest")
-    call SET_FLOGGER_OPTIONS(FileOutput=.true.)
+    call flogger_set_section(addDateTime=.true., addLabel=.true.)
+    call flogger_set_options(FileOutput=.true., useEncoding=.true.)
 
     print*
     print*, "!--- DEFAULT BEHAVIOR (DEBUG)"
@@ -92,7 +112,7 @@ subroutine levelClassificationTest()
     
     print*
     print*, "!--- SET TO RELEASE"
-    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_RELEASE)
+    call flogger_set_options(Level=FLOGS_SET_RELEASE)
 
     call middleWarning()
     call middleNotice()
@@ -106,7 +126,7 @@ subroutine levelClassificationTest()
 
     print*
     print*, "!--- SET TO NO WARNING"
-    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_NOWARN)
+    call flogger_set_options(Level=FLOGS_SET_NOWARN)
 
     call middleWarning()
     call middleNotice()
@@ -117,11 +137,11 @@ subroutine levelClassificationTest()
     call flogs%warning("Message Test Warning 3")
     call flogs%error("Message Test Error 3")
     call flogs%fatal("Message Test Fatal 3")
-    call SET_FLOGGER_OPTIONS(FileOutput=.false.)
+    call flogger_set_options(FileOutput=.false.)
 
     print*
     print*, "!--- SET TO SILENT"
-    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_SILENT)
+    call flogger_set_options(Level=FLOGS_SET_SILENT, useEncoding=.false.)
 
     call middleWarning()
     call middleNotice()
@@ -135,7 +155,7 @@ subroutine levelClassificationTest()
 
     print*
     print*, "!--- SET TO RELEASE"
-    call SET_FLOGGER_OPTIONS(Level=FLOGS_SET_RELEASE)
+    call flogger_set_options(Level=FLOGS_SET_RELEASE)
 
     call middleWarning()
     call middleNotice()
@@ -148,5 +168,122 @@ subroutine levelClassificationTest()
     call flogs%fatal("Message Test Fatal 5")
 
 end subroutine levelClassificationTest
+
+
+subroutine stress_test_basic(n_iteration, time)
+    implicit none
+    integer, intent(in) :: n_iteration
+    real, intent(out) ::  time
+    integer :: i
+    real :: timein, timeout
+    character(10) :: tmp
+
+    type(FloggerUnit) :: flog = FloggerUnit("Stress Test 1")
+    call flogger_set_options(UseEncoding=.true., ConsolePrint=.true.,           &
+                             level=FLOGS_SET_DEBUG)
+
+    call cpu_time(timein)
+    do i = 1, n_iteration
+        write(tmp, "(I7)") i
+        call flog%warning("Basic Stress Test Message" // tmp)
+    end do
+    call cpu_time(timeout)
+
+    time = timeout - timein
+end subroutine stress_test_basic
+
+
+subroutine stress_test_plain(n_iteration, time)
+    implicit none
+    integer, intent(in) :: n_iteration
+    real, intent(out) ::  time
+    integer :: i
+    real :: timein, timeout
+    character(10) :: tmp
+
+    type(FloggerUnit) :: flog = FloggerUnit("Stress Test 2")
+    call flogger_set_options(UseEncoding=.false., ConsolePrint=.true.,          &
+                             level=FLOGS_SET_DEBUG)
+
+    call cpu_time(timein)
+    do i = 1, n_iteration
+        write(tmp, "(I7)") i
+        call flog%warning("Plain Stress Test Message" // tmp)
+    end do
+    call cpu_time(timeout)
+
+    time = timeout - timein
+end subroutine stress_test_plain
+
+
+subroutine stress_test_empty(n_iteration, time)
+    implicit none
+    integer, intent(in) :: n_iteration
+    real, intent(out) ::  time
+    integer :: i
+    real :: timein, timeout
+    character(10) :: tmp
+
+    type(FloggerUnit) :: flog = FloggerUnit("Stress Test 3")
+    call flogger_set_options(UseEncoding=.false., ConsolePrint=.false.,         &
+                             level=FLOGS_SET_DEBUG)
+
+    call cpu_time(timein)
+    do i = 1, n_iteration
+        write(tmp, "(I7)") i
+        call flog%warning("Empty Stress Test Message" // tmp)
+    end do
+    call cpu_time(timeout)
+
+    time = timeout - timein
+end subroutine stress_test_empty
+
+
+subroutine stress_test_noDTnoLabel(n_iteration, time)
+    use FloggerFormatter, only: flogger_set_section
+    implicit none
+    integer, intent(in) :: n_iteration
+    real, intent(out) ::  time
+
+    integer :: i
+    real :: timein, timeout
+    character(10) :: tmp
+
+    type(FloggerUnit) :: flogsta = FloggerUnit("Stress Test 4")
+    call flogger_set_options(UseEncoding=.false., ConsolePrint=.true.,          &
+                             level=FLOGS_SET_DEBUG)
+    call flogger_set_section(addDateTime=.false., addLabel=.false.)
+
+    call cpu_time(timein)
+    do i = 1, n_iteration
+        write(tmp, "(I7)") i
+        call flogsta%warning("noDTnoLabel Stress Test Message" // tmp)
+    end do
+    call cpu_time(timeout)
+
+    time = timeout - timein
+end subroutine stress_test_noDTnoLabel
+
+
+subroutine stress_test_fortranprint(n_iteration, time)
+    use FloggerFormatter, only: flogger_set_section
+    implicit none
+    integer, intent(in) :: n_iteration
+    real, intent(out) ::  time
+    integer :: i
+    real :: timein, timeout
+    character(10) :: tmp
+
+    type(FloggerUnit) :: flog = FloggerUnit("Stress Test 3")
+    call flogger_set_options(UseEncoding=.false., ConsolePrint=.true., level=FLOGS_SET_DEBUG)
+    call flogger_set_section(addDateTime=.false., addLabel=.false.)
+    call cpu_time(timein)
+    do i = 1, n_iteration
+        print*, i
+    end do
+    call cpu_time(timeout)
+
+    time = timeout - timein
+end subroutine stress_test_fortranprint
 
 end program TEST_FLOGGER

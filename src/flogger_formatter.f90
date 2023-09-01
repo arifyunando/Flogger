@@ -28,15 +28,16 @@ module FloggerFormatter
     use FloggerAnsiStyling
     implicit none
     private
-    ! Date Styles
-    character(64):: FLOGS_STYLE_LABEL = FAS_K_CLEAR
-    character(64):: FLOGS_STYLE_TEXT  = FAS_K_CLEAR
-    character(64):: FLOGS_STYLE_DATETIME                                        &
-                        = FAS_K_START // trim(FGB_CYAN) // FAS_K_END
+    
+    ! Default Section Styles
+    character(64), private :: FLOGS_STYLE_LABEL = FAS_K_CLEAR
+    character(64), private :: FLOGS_STYLE_TEXT  = FAS_K_CLEAR
+    character(64), private :: FLOGS_STYLE_DATETIME                              &
+                                = FAS_K_START // trim(FGB_CYAN) // FAS_K_END
     
     ! Default Category Styles
-    character(15) :: STY_DEBUG, STY_INFO, STY_NOTE
-    character(15) :: STY_WARN, STY_ERROR, STY_FATAL
+    character(15), private :: STY_DEBUG, STY_INFO, STY_NOTE
+    character(15), private :: STY_WARN, STY_ERROR, STY_FATAL
     parameter(STY_DEBUG = FAS_K_START // trim(FGD_WHITE)   // FAS_K_END)
     parameter(STY_INFO  = FAS_K_START // trim(FGD_GREEN)   // FAS_K_END)
     parameter(STY_NOTE  = FAS_K_START // trim(FGD_MAGENTA) // FAS_K_END)
@@ -45,15 +46,19 @@ module FloggerFormatter
                                       // trim(FGB_GREEN)   // FAS_K_END)
     parameter(STY_FATAL = FAS_K_START // trim(FAS_BOLD)    // ';'               &
                                       // trim(FGB_RED)     // FAS_K_END)
-                                     
+
+    ! Section Options (Default)
+    logical, private :: FLOGS_SECTION_DATETIME = .true.
+    logical, private :: FLOGS_SECTION_LABEL = .true.
+
     ! Category Definition
     type :: FloggerCategory
         character(7) :: name
         character(15) :: style
     end type FloggerCategory
 
-    type(FloggerCategory) :: flogDebug, flogInfo, flogNotice
-    type(FloggerCategory) :: flogWarning, flogError, flogFatal
+    type(FloggerCategory), private :: flogDebug, flogInfo, flogNotice
+    type(FloggerCategory), private :: flogWarning, flogError, flogFatal
     parameter(flogDebug   = FloggerCategory('debug  ', STY_DEBUG))
     parameter(flogInfo    = FloggerCategory('info   ', STY_INFO))
     parameter(flogNotice  = FloggerCategory('notice ', STY_NOTE))
@@ -61,15 +66,15 @@ module FloggerFormatter
     parameter(flogError   = FloggerCategory('ERROR!!', STY_ERROR))
     parameter(flogFatal   = FloggerCategory('FATAL!!', STY_FATAL))
 
-    public :: SET_FLOGGER_STYLE, PRINT_FILE_HEADER
-    public :: printConsole, printPlainText
+    ! define procedures visibility
+    public :: flogger_set_style, flogger_set_section, print_file_header
+    public :: printFormatted
 contains
 
 !--- PRIVATE FUNCTIONS / SUBROUTINES
 
 function getDateTime(useEncoding) result(out)
     implicit none
-
     character(:), allocatable :: out
     logical, optional :: useEncoding
 
@@ -102,7 +107,7 @@ function getDateTime(useEncoding) result(out)
 end function
 
 
-function getNameLabel(label, useEncoding) result(out)
+function getLabel(label, useEncoding) result(out)
     implicit none
     character(:), allocatable :: out
     character(*), intent(in) :: label
@@ -128,9 +133,8 @@ function getNameLabel(label, useEncoding) result(out)
 end function
 
 
-function getLevelLabel(level, useEncoding) result(out)
+function getLevel(level, useEncoding) result(out)
     implicit none
-
     character(:), allocatable :: out
     integer, intent(in) :: level
     logical, optional :: useEncoding
@@ -159,9 +163,29 @@ end function
 
 !--- PUBLIC FUNCTIONS / SUBROUTINES
 
-subroutine SET_FLOGGER_STYLE(LabelOptions,  DateOptions, TextOptions)
+function printFormatted(message, label, level, inConsole) result(out)
     implicit none
+    character(:), allocatable :: out
+    character(*), intent(in) :: message
+    character(*), intent(in) :: label
+    integer, intent(in) :: level
+    logical, intent(in) :: inConsole
 
+    !--- local variables
+    out = ''
+
+    !--- processes
+    if ( FLOGS_SECTION_DATETIME )                                               &
+        out = out // trim(getDateTime(useEncoding=inConsole)) // ' ' 
+    if ( FLOGS_SECTION_LABEL )                                                  &
+        out = out // trim(getLabel(label, useEncoding=inConsole)) // ' ' 
+
+    out = out // getLevel(level, useEncoding=inConsole) // ' ' // message
+end function printFormatted
+
+
+subroutine flogger_set_style(LabelOptions,  DateOptions, TextOptions)
+    implicit none
     character(*), optional, intent(in) :: LabelOptions(:)
     character(*), optional, intent(in) :: DateOptions(:)
     character(*), optional, intent(in) :: TextOptions(:)
@@ -174,10 +198,20 @@ subroutine SET_FLOGGER_STYLE(LabelOptions,  DateOptions, TextOptions)
 
     if ( present(TextOptions) ) &
         FLOGS_STYLE_TEXT = getStyleEncoding(TextOptions)
-end subroutine SET_FLOGGER_STYLE
+end subroutine flogger_set_style
 
 
-subroutine PRINT_FILE_HEADER(unit)
+subroutine flogger_set_section(addDateTime,  addLabel)
+    implicit none
+    logical, optional, intent(in) :: addDateTime, addLabel
+
+    if ( present(addDateTime) ) FLOGS_SECTION_DATETIME = addDateTime
+    if ( present(addLabel) ) FLOGS_SECTION_LABEL = addLabel
+end subroutine flogger_set_section
+
+
+subroutine print_file_header(unit)
+    implicit none
     integer, intent(in) :: unit
 
     write(unit, 200) 
@@ -191,52 +225,6 @@ subroutine PRINT_FILE_HEADER(unit)
     220 format (36X, A25, 36X)
     200 format ("=================================================",            &
                 "================================================")
-end subroutine PRINT_FILE_HEADER
-
-
-function printConsole(message, label, level) result(out)
-    implicit none
-
-    character(:), allocatable :: out
-    character(*), intent(in) :: message
-    character(*), intent(in) :: label
-    integer, intent(in) :: level
-
-    !--- local variables
-    character(512) :: tmp
-
-    !--- processes
-    write(tmp, 200) getDateTime(useEncoding=.true.),                            &
-                    getNameLabel(label, useEncoding=.true.),                    &
-                    getLevelLabel(level, useEncoding=.true.),                   &
-                    message
-    out = trim(tmp)
-
-    !--- formatters
-    200 format (A, ' ', A, ' ', A, ' ', A)
-end function printConsole
-
-
-function printPlainText(message, label, level) result(out)
-    implicit none
-
-    character(:), allocatable :: out
-    character(*), intent(in) :: message
-    character(*), intent(in) :: label
-    integer, intent(in) :: level
-
-    !--- local variables
-    character(512) :: tmp
-
-    !--- processes
-    write(tmp, 200) getDateTime(useEncoding=.false.),                           &
-                    getNameLabel(label, useEncoding=.false.),                   &
-                    getLevelLabel(level, useEncoding=.false.),                  &
-                    message
-    out = trim(tmp)
-
-    !--- formatters
-    200 format (A, ' ', A, ' ', A, ' ', A)
-end function printPlainText
+end subroutine print_file_header
 
 end module FloggerFormatter
